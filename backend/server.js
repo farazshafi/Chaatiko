@@ -3,30 +3,24 @@ const dotenv = require("dotenv")
 const { chats } = require("./data/data")
 const connectDB = require("./config/db")
 const colors = require("colors")
+const userRoutes = require("./routes/userRoutes")
+const { errorHandler, notFound } = require("./middleware/errorMiddleware")
 
 const app = express()
 dotenv.config()
 connectDB()
 
-app.get("/",(req,res)=>{
+app.use(express.json()) //To accept json data
+
+app.get("/", (req, res) => {
     res.send("Api is running")
 })
 
-app.get("/api/chat",(req,res)=>{
-    res.send(chats)
-})
+app.use("/api/user", userRoutes)
 
-app.get("/api/chat/:id",(req,res)=>{
-    const chatID = req.params.id;
-    const singleChat = chats.find(chat => chat._id === chatID)
-    if(singleChat){
-        res.send(singleChat)
-    }else{
-        res.status(404)
-        throw new Error("Chat not found")
-    }
-})
+app.use(notFound)
+app.use(errorHandler)
 
 const port = process.env.PORT || 5000
 
-app.listen(port,console.log(`Server started on port ${port}`.yellow.bold))
+app.listen(port, console.log(`Server started on port ${port}`.yellow.bold))
