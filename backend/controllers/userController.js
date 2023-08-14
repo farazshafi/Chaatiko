@@ -4,7 +4,7 @@ const generateToken = require("../config/generateToken")
 
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, profile } = req.body
-    console.log(name,email,password)
+    console.log(name, email, password)
 
     if (!name || !email || !password) {
         res.status(400)
@@ -48,11 +48,29 @@ const authUser = asyncHandler(async (req, res) => {
             profile: user.profile,
             token: generateToken(user._id)
         })
-    }else{
+    } else {
         res.status(401)
         throw new Error("Invalid Email or Password")
     }
 
 })
 
-module.exports = { registerUser, authUser }
+const getAllUsers = asyncHandler(async (req, res) => {
+    const keyword = req.query.search ?
+        {
+            $or: [
+                { name: { $regex: req.query.search, $options: "i" } },
+                { email: { $regex: req.query.search, $options: "i" } }
+            ]
+        } : {}
+    const users = await User.find(keyword).find({ _id: { $ne: req.user._id } })// search the keyword without login user
+    if (users) {
+        res.send(users)
+    } else {
+        res.status(401)
+        throw new Error("User Not Found")
+    }
+
+})
+
+module.exports = { registerUser, authUser, getAllUsers }
