@@ -65,7 +65,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
         } : {}
     const users = await User.find(keyword).find({ _id: { $ne: req.user._id } })// search the keyword without login user
     if (users) {
-        res.send(users)
+        res.json(users)
     } else {
         res.status(401)
         throw new Error("User Not Found")
