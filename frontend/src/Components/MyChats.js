@@ -5,17 +5,18 @@ import { ChatState } from '../Context/ChatProvider'
 import { AddIcon } from '@chakra-ui/icons'
 import ChatLoading from './ChatLoading'
 import { getSender } from "../config/ChatLogics"
+import GroupChatModal from './miscellaneous/GroupChatModal'
 
-const MyChats = () => {
+const MyChats = ({fetchAgain}) => {
   const [loggedUser, setLoggedUser] = useState()
-  const { user, selectedChat, setSeclectedChat, chats, setChats } = ChatState()
+  const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState()
 
   const toast = useToast()
 
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")))
     fetchChats()
-  }, []);
+  }, [fetchAgain]);
 
   const fetchChats = async () => {
     try {
@@ -36,10 +37,11 @@ const MyChats = () => {
       })
     }
   }
+
   return (
     <>
       <Box
-        display={"flex"}
+        display={{base:selectedChat ? "none" : "flex" , md:"flex"}}
         flexDir={"column"}
         alignItems={"center"}
         padding={3}
@@ -59,13 +61,16 @@ const MyChats = () => {
           alignItems={"center"}
         >
           My Chats
-          <Button
-            display={"flex"}
-            fontSize={{ base: "17px", md: "10px", lg: "17px" }}
-            rightIcon={<AddIcon />}
-          >
-            New Group Chat
-          </Button>
+          <GroupChatModal>
+            <Button
+              display={"flex"}
+              fontSize={{ base: "17px", md: "10px", lg: "17px" }}
+              rightIcon={<AddIcon />}
+            >
+              New Group Chat
+            </Button>
+          </GroupChatModal>
+
         </Box>
         <Box
           display={"flex"}
@@ -83,7 +88,7 @@ const MyChats = () => {
                 <Box
                   bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
                   color={selectedChat === chat ? "white" : "black"}
-                  onClick={() => setSeclectedChat(chat)}
+                  onClick={() => setSelectedChat(chat)}
                   cursor={"pointer"}
                   px={3}
                   py={2}
