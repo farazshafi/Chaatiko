@@ -10,9 +10,8 @@ const {
 } = require("../controllers/chatController")
 const router = express.Router()
 
-router.route("/")
-    .post(protect, accessChat)
-    .get(protect, fetchChats)
+router.post("/", protect, accessChat)
+router.get("/", protect, fetchChats)
 
 router.route("/group")
     .post(protect, createGroupChat)
