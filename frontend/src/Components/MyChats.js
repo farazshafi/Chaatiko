@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Text, useToast } from '@chakra-ui/react'
+import { Box, Button, Spinner, Stack, Text, useToast } from '@chakra-ui/react'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { ChatState } from '../Context/ChatProvider'
@@ -7,8 +7,9 @@ import ChatLoading from './ChatLoading'
 import { getSender } from "../config/ChatLogics"
 import GroupChatModal from './miscellaneous/GroupChatModal'
 
-const MyChats = ({fetchAgain}) => {
+const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState()
+  const [loading, setLoading] = useState(false)
   const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState()
 
   const toast = useToast()
@@ -19,6 +20,7 @@ const MyChats = ({fetchAgain}) => {
   }, [fetchAgain]);
 
   const fetchChats = async () => {
+    setLoading(true)
     try {
       const config = {
         headers: {
@@ -27,6 +29,7 @@ const MyChats = ({fetchAgain}) => {
       }
       const { data } = await axios.get("/api/chat", config)
       setChats(data)
+      setLoading(false)
     } catch (error) {
       toast({
         title: 'Failed to load Chats.',
@@ -35,13 +38,14 @@ const MyChats = ({fetchAgain}) => {
         isClosable: true,
         position: "top-left"
       })
+      setLoading(false)
     }
   }
 
   return (
     <>
       <Box
-        display={{base:selectedChat ? "none" : "flex" , md:"flex"}}
+        display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
         flexDir={"column"}
         alignItems={"center"}
         padding={3}
@@ -82,7 +86,8 @@ const MyChats = ({fetchAgain}) => {
           borderRadius={"lg"}
           overflow={"hidden"}
         >
-          {chats ? (
+          {loading && <ChatLoading />}
+          {chats && (
             <Stack overflowY={"scroll"}>
               {chats.map((chat) => (
                 <Box
@@ -103,8 +108,6 @@ const MyChats = ({fetchAgain}) => {
                 </Box>
               ))}
             </Stack>
-          ) : (
-            <ChatLoading />
           )}
         </Box>
       </Box>
