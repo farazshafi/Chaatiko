@@ -8,6 +8,7 @@ const chatRoutes = require("./routes/chatRoutes")
 const messageRoutes = require("./routes/messageRoutes")
 const { errorHandler, notFound } = require("./middleware/errorMiddleware")
 const { Socket } = require("socket.io")
+const path = require("path")
 
 const app = express()
 dotenv.config()
@@ -15,15 +16,27 @@ connectDB()
 
 app.use(express.json()) //To accept json data
 
-app.get("/", (req, res) => {
-    res.send("Api is running")
-})
-
 app.use("/api/user", userRoutes)
 app.use("/api/chat", chatRoutes)
 app.use("/api/message", messageRoutes)
 
-app.use(notFound)
+const NODE_ENV = "production"
+
+// -------------------Deployment------------
+const __dirname1 = path.resolve()
+if (NODE_ENV === "production"){
+    app.use(express.static(path.join(__dirname1,'/frontend/build')))
+    app.get("*",(req,res)=>{
+        res.sendFile(path.resolve(__dirname1,"frontend","build","index.html"))
+    })
+}else{
+    app.get("/",(req,res)=>{
+        res.send("")
+    })
+}
+    // -------------------Deployment------------
+
+    app.use(notFound)
 app.use(errorHandler)
 
 const port = process.env.PORT || 5000
@@ -61,7 +74,7 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.off("setup",() =>{
+    socket.off("setup", () => {
         console.log("USER DISCONNECTED")
         socket.leave(userData._id)
     })
