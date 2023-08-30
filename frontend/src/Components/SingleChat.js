@@ -23,7 +23,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [typing, setTyping] = useState(false)
     const [isTyping, setIsTyping] = useState(false)
 
-    const { user, selectedChat, setSelectedChat } = ChatState()
+    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState()
     const toast = useToast()
 
     const fetchMessage = async () => {
@@ -36,7 +36,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 }
             }
             const { data } = await axios.get(`/api/message/${selectedChat._id}`, config)
-            console.log(data)
             setMessages(data)
             setLoading(false)
             socket.emit("join chat", selectedChat._id)
@@ -92,13 +91,17 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         selectedChatCompare = selectedChat;
         // eslint-disable-next-line
     }, [selectedChat]);
+    console.log(notification)
     useEffect(() => {
         socket.on("message recieved", (newMessageRecieved) => {
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
                 selectedChatCompare._id !== newMessageRecieved.chat._id
             ) {
-                // give notification 
+                if(!notification.includes(newMessageRecieved)){
+                    setNotification([newMessageRecieved, ...notification]);
+                    setFetchAgain(!fetchAgain);
+                }
             } else {
                 setMessages([...messages, newMessageRecieved]);
             }

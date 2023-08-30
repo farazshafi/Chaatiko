@@ -29,6 +29,9 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import ChatLoading from '../ChatLoading'
 import UserListItem from '../UserAvatar/UserListItem'
+import { getSender } from '../../config/ChatLogics'
+import { Effect } from "react-notification-badge"
+import NotificationBadge from 'react-notification-badge/lib/components/NotificationBadge'
 
 const SideDrawer = () => {
   const [search, setSearch] = useState('')
@@ -36,7 +39,7 @@ const SideDrawer = () => {
   const [loading, setLoading] = useState('')
   const [loadingChat, setLoadingChat] = useState('')
 
-  const { user ,selectedChat, setSelectedChat, chats, setChats} = ChatState()
+  const { user, selectedChat, setSelectedChat, chats, setChats, notification, setNotification } = ChatState()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const navigate = useNavigate()
   const toast = useToast()
@@ -89,7 +92,6 @@ const SideDrawer = () => {
         }
       }
       const { data } = await axios.post("/api/chat", { userId }, config)
-      console.log(data)
       if (!chats.find((chat) => chat._id === data._id)) {
         setChats([data, ...chats])
       }
@@ -132,9 +134,26 @@ const SideDrawer = () => {
         <div>
           <Menu>
             <MenuButton padding="1">
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <BellIcon fontSize={"2xl"} margin={1} />
             </MenuButton>
-            {/* <MenuList></MenuList> */}
+            <MenuList pl={2}>
+              {!notification.length && "No New Messages"}
+              {notification.map((singleNotification) => (
+                <MenuItem
+                  key={singleNotification._id}
+                  onClick={() => {
+                    setSelectedChat(singleNotification.chat)
+                    setNotification(notification.filter((n) => n !== singleNotification))
+                  }}
+                >
+                  {singleNotification.chat.isGroupChat ? `New Message in ${singleNotification.chat.chatName}` : `New Message from ${getSender(user._id, singleNotification.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
@@ -177,7 +196,7 @@ const SideDrawer = () => {
                 />
               ))
             )}
-            {loadingChat && <Spinner ml="auto" display={"flex"}/>}
+            {loadingChat && <Spinner ml="auto" display={"flex"} />}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
