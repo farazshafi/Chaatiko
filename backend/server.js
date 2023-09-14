@@ -31,7 +31,7 @@ if (NODE_ENV === "production"){
     })
 }else{
     app.get("/",(req,res)=>{
-        res.send("")
+        res.send("Api is running in develpment mode")
     })
 }
     // -------------------Deployment------------
