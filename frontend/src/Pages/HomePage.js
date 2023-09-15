@@ -28,7 +28,7 @@ const HomePage = () => {
         borderRadius="lg"
         borderWidth="1px"
       >
-        <Text fontSize="4xl" fontFamily="Work sans">Chat App</Text>
+        <Text fontSize="4xl" fontFamily="Work sans">Chaatiko</Text>
       </Box>
       <Box
         bg={"white"}
