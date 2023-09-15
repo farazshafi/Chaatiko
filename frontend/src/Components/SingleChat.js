@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ChatState } from '../Context/ChatProvider'
 import { Box, FormControl, IconButton, Input, Spinner, Text, useToast } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -12,7 +12,11 @@ import io from "socket.io-client"
 import Lottie from "lottie-react"
 import animationData from "../animations/typing.json"
 
+// Production
 const ENDPOINT = "https://chaatiko.onrender.com/"
+// Development
+// const ENDPOINT = "http://localhost:5000"
+
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
@@ -22,6 +26,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [socketConnected, setSocketConnected] = useState(false)
     const [typing, setTyping] = useState(false)
     const [isTyping, setIsTyping] = useState(false)
+    const socketRef = useRef();
 
     const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState()
     const toast = useToast()
@@ -82,23 +87,29 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     useEffect(() => {
         socket = io(ENDPOINT)
         socket.emit("setup", user)
-        socket.on("connected", () => setSocketConnected(true))
+        socket.on('connected', () => {
+            console.log('Socket connected!');
+            setSocketConnected(true);
+        });
         socket.on("typing", () => setIsTyping(true))
         socket.on("stop typing", () => setIsTyping(false))
+        return () => {
+            console.log('Cleaning up socket...');
+            socket.disconnect();
+        };
     }, []);
     useEffect(() => {
         fetchMessage();
         selectedChatCompare = selectedChat;
         // eslint-disable-next-line
     }, [selectedChat]);
-    console.log(notification)
     useEffect(() => {
         socket.on("message recieved", (newMessageRecieved) => {
             if (
                 !selectedChatCompare || // if chat is not selected or doesn't match current chat
                 selectedChatCompare._id !== newMessageRecieved.chat._id
             ) {
-                if(!notification.includes(newMessageRecieved)){
+                if (!notification.includes(newMessageRecieved)) {
                     setNotification([newMessageRecieved, ...notification]);
                     setFetchAgain(!fetchAgain);
                 }
@@ -115,7 +126,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             setTyping(true)
             socket.emit("typing", selectedChat._id)
         }
-        if(!newMessage || newMessage === ""){
+        if (!newMessage || newMessage === "") {
             return;
         }
         let lastTypingTime = new Date().getTime()
@@ -131,9 +142,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }
 
     const lottieStyle = {
-        width : "70px",
-        marginBottom:5,
-        marginLeft:0
+        width: "70px",
+        marginBottom: 5,
+        marginLeft: 0
     }
 
     return (

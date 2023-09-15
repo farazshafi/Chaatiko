@@ -46,7 +46,11 @@ const server = app.listen(port, console.log(`Server started on port ${port}`.yel
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
+        // production
         origin: "https://chaatiko.onrender.com/"
+        // development
+        // origin: "http://localhost:3000"
+
     }
 })
 
@@ -72,9 +76,9 @@ io.on("connection", (socket) => {
             socket.in(user._id).emit("message recieved", newMessageRecieved);
         });
     });
-
-    socket.off("setup", () => {
-        console.log("USER DISCONNECTED")
-        socket.leave(userData._id)
-    })
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+        socket.disconnect(); // Disconnect the socket
+    });
+    
 })
