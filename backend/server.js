@@ -10,6 +10,7 @@ const { errorHandler, notFound } = require("./middleware/errorMiddleware")
 const { Socket } = require("socket.io")
 const path = require("path")
 
+
 const app = express()
 dotenv.config()
 connectDB()
@@ -20,28 +21,34 @@ app.use("/api/user", userRoutes)
 app.use("/api/chat", chatRoutes)
 app.use("/api/message", messageRoutes)
 
+// production
+// const NODE_ENV = "production"
+// development 
 const NODE_ENV = "production"
+
 
 // -------------------Deployment------------
 const __dirname1 = path.resolve()
-if (NODE_ENV === "production"){
-    app.use(express.static(path.join(__dirname1,'/frontend/build')))
-    app.get("*",(req,res)=>{
-        res.sendFile(path.resolve(__dirname1,"frontend","build","index.html"))
+if (NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname1, '/frontend/build')))
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
     })
-}else{
-    app.get("/",(req,res)=>{
+} else {
+    app.get("/", (req, res) => {
         res.send("Api is running in develpment mode")
     })
 }
-    // -------------------Deployment------------
+// -------------------Deployment------------
 
-    app.use(notFound)
+app.use(notFound)
 app.use(errorHandler)
 
 const port = process.env.PORT || 5000
 
 const server = app.listen(port, console.log(`Server started on port ${port}`.yellow.bold))
+
+// socket connection
 
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
@@ -54,13 +61,17 @@ const io = require("socket.io")(server, {
     }
 })
 
+const onlineUsers = {}; // This object will store online status for users
+
 io.on("connection", (socket) => {
     console.log("connected to socket.io")
     socket.on("setup", (userData) => {
+        onlineUsers[userData._id] = true; // User is online
         socket.join(userData._id);
         socket.emit("connected");
+        // Notify all other users about the updated online status
+        io.emit("userStatus", { userId: userData._id, isOnline: true });
     });
-
     socket.on("join chat", (room) => {
         socket.join(room);
         console.log("User Joined Room: " + room);
@@ -77,8 +88,14 @@ io.on("connection", (socket) => {
         });
     });
     socket.on('disconnect', () => {
+        const userId = socket.id; // Assuming socket id is the user id for simplicity
+        if (onlineUsers[userId]) {
+            onlineUsers[userId] = false; // User is offline
+            // Notify all other users about the updated online status
+            io.emit("userStatus", { userId, isOnline: false });
+        }
         console.log('User disconnected');
         socket.disconnect(); // Disconnect the socket
     });
-    
+
 })

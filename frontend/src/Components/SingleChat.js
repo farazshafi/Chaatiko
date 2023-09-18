@@ -10,7 +10,9 @@ import "../style.css"
 import ScrollableChat from './ScrollableChat'
 import io from "socket.io-client"
 import Lottie from "lottie-react"
-import animationData from "../animations/typing.json"
+import animationTypingData from "../animations/typing.json"
+import animationActiveData from "../animations/active.json"
+import animationOfflineData from "../animations/offline.json"
 
 // Production
 const ENDPOINT = "https://chaatiko.onrender.com/"
@@ -21,12 +23,14 @@ var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState([])
+    const [onlineLoading, setOnlineLoading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [newMessage, setNewMessage] = useState()
     const [socketConnected, setSocketConnected] = useState(false)
     const [typing, setTyping] = useState(false)
     const [isTyping, setIsTyping] = useState(false)
-    const socketRef = useRef();
+    const [isOnline, setIsOnline] = useState(false)
+    const [onlineUsers, setOnlineUsers] = useState({});
 
     const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState()
     const toast = useToast()
@@ -91,6 +95,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             console.log('Socket connected!');
             setSocketConnected(true);
         });
+        socket.on("userStatus", ({ userId, isOnline }) => {
+            setOnlineUsers(prevOnlineUsers => ({
+                ...prevOnlineUsers,
+                [userId]: isOnline
+            }));
+        });
         socket.on("typing", () => setIsTyping(true))
         socket.on("stop typing", () => setIsTyping(false))
         return () => {
@@ -141,10 +151,18 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         }, timeLength);
     }
 
-    const lottieStyle = {
+
+    // lottie styles
+    const lottieStyleTyping = {
         width: "70px",
         marginBottom: 5,
         marginLeft: 0
+    }
+    const lottieStyleActive = {
+        width: "70px",
+    }
+    const lottieStyleOffline = {
+        width: "70px",
     }
 
     return (
@@ -170,6 +188,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                             (<>
                                 {getSender(user, selectedChat.users)}
                                 <ProfileModal user={getSenderFull(user, selectedChat.users)} />
+
                             </>
                             )
                             :
@@ -212,8 +231,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                         <FormControl onKeyDown={sendMessage} isRequired mt={3}>
                             {isTyping && (
                                 <Lottie
-                                    animationData={animationData}
-                                    style={lottieStyle}
+                                    animationData={animationTypingData}
+                                    style={lottieStyleTyping}
                                     loop={true}
                                     autoPlay={true}
                                 />
@@ -227,6 +246,29 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                 value={newMessage}
                             />
                         </FormControl>
+                        <Box id='status'>
+                            {onlineUsers[selectedChat.users[0]._id] ? (
+                            <>
+                                <Lottie
+                                
+                                    animationData={animationActiveData}
+                                    style={lottieStyleActive}
+                                    loop={true}
+                                    autoPlay={true}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <Lottie
+                                    animationData={animationOfflineData}
+                                    style={lottieStyleOffline}
+                                    loop={true}
+                                    autoPlay={true}
+                                />
+                            </>
+                        )}
+                        </Box>
+
                     </Box>
                 </>
             ) : (

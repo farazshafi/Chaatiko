@@ -73,4 +73,5 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 })
 
-module.exports = { registerUser, authUser, getAllUsers }
+
+module.exports = { registerUser, authUser, getAllUsers}

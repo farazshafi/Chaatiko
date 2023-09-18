@@ -30,7 +30,7 @@ const ProfileModal = ({ user, children }) => {
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader
-                    fontSize={"40px"}
+                    fontSize={"30px"}
                     fontFamily="Work sans"
                     display={"flex"}
                     justifyContent={"center"}
@@ -46,12 +46,12 @@ const ProfileModal = ({ user, children }) => {
                     >
                     <Image 
                         borderRadius={"full"}
-                        boxSize={"150px"}
+                        boxSize={"100px"}
                         src={user.profile}
                         alt = {user.name}
                     />
                     <Text
-                    fontSize={{base:"28px", md:"30px"}}
+                    fontSize={{base:"15px", md:"25px"}}
                     fontFamily={"Work sans"}
                     >
                     Email: {user.email}</Text>
