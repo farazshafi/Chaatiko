@@ -45,3 +45,19 @@ export const isSameSenderMargin = (messages, m, i, userId) => {
 export const isSameUser = (messages, m, i) => {
   return i > 0 && messages[i - 1].sender._id === m.sender._id;
 };
+
+
+export const isUserOnline = (selectedChat, loggedUser, onlineUsers) => {
+  console.log("online users:", onlineUsers)
+  if (!selectedChat || !loggedUser || !onlineUsers) {
+    // Handle invalid inputs or missing data
+    return false;
+  }
+  // Find the opponent's ID in the selected chat
+  const opponentId = selectedChat.users.find(user => user._id !== loggedUser._id)?._id;
+  console.log("Opponent ID : ", opponentId)
+  // Check if the opponent's ID is in the onlineUsers object
+  return onlineUsers?.some(user => user.userId === opponentId)
+  // return !!onlineUsers[opponentId];
+};
+

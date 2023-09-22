@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ChatState } from '../Context/ChatProvider'
 import { Box, FormControl, IconButton, Input, Spinner, Text, useToast } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
-import { getSender, getSenderFull } from '../config/ChatLogics'
+import { getSender, getSenderFull, isUserOnline } from '../config/ChatLogics'
 import ProfileModal from './miscellaneous/ProfileModal'
 import UpdateGroupChatModal from './miscellaneous/UpdateGroupChatModal'
 import axios from 'axios'
@@ -11,8 +11,7 @@ import ScrollableChat from './ScrollableChat'
 import io from "socket.io-client"
 import Lottie from "lottie-react"
 import animationTypingData from "../animations/typing.json"
-import animationActiveData from "../animations/active.json"
-import animationOfflineData from "../animations/offline.json"
+import IsOnlineAnimation from './IsOnlineAnimation'
 
 // Production
 const ENDPOINT = "https://chaatiko.onrender.com/"
@@ -23,16 +22,15 @@ var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState([])
-    const [onlineLoading, setOnlineLoading] = useState(false)
+    const [onlineUsers, setOnlineUsers] = useState([])
     const [loading, setLoading] = useState(false)
     const [newMessage, setNewMessage] = useState()
     const [socketConnected, setSocketConnected] = useState(false)
     const [typing, setTyping] = useState(false)
     const [isTyping, setIsTyping] = useState(false)
-    const [isOnline, setIsOnline] = useState(false)
-    const [onlineUsers, setOnlineUsers] = useState({});
+    const [isOpponentOnline, setIsOpponentOnline] = useState(null)
 
-    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState()
+    const { user, selectedChat, setSelectedChat, notification, setNotification, } = ChatState()
     const toast = useToast()
 
     const fetchMessage = async () => {
@@ -88,31 +86,52 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         }
     }
 
+    // Test Here.... UseEffect
+
     useEffect(() => {
-        socket = io(ENDPOINT)
-        socket.emit("setup", user)
+        socket = io(ENDPOINT);
+        socket.emit("setup", user);
         socket.on('connected', () => {
             console.log('Socket connected!');
             setSocketConnected(true);
         });
-        socket.on("userStatus", ({ userId, isOnline }) => {
-            setOnlineUsers(prevOnlineUsers => ({
-                ...prevOnlineUsers,
-                [userId]: isOnline
-            }));
-        });
         socket.on("typing", () => setIsTyping(true))
         socket.on("stop typing", () => setIsTyping(false))
+
         return () => {
             console.log('Cleaning up socket...');
             socket.disconnect();
         };
-    }, []);
+    }, [user,]);
+
     useEffect(() => {
         fetchMessage();
+
         selectedChatCompare = selectedChat;
         // eslint-disable-next-line
-    }, [selectedChat]);
+        const opponentOnline = isUserOnline(selectedChat, user, onlineUsers);
+        setIsOpponentOnline(opponentOnline)
+        console.log("Selected Chat : ", selectedChat)
+        console.log("Is sender online : ", isOpponentOnline)
+    }, [selectedChat, ]);
+
+    useEffect(() => {
+        if (socket === null) return;
+        socket.emit("addNewUser", user?._id)
+        socket.on("getOnlineUsers", (users) => {
+            setOnlineUsers(users)
+        })
+
+        return () => {
+            socket.off("getOnlineUsers")
+            setIsOpponentOnline(false)
+        }
+    }, [socket,]);
+
+    useEffect(() => {
+        console.log("online users: ", onlineUsers);  // Log here
+    }, [onlineUsers]);  // Log whenever onlineUsers changes
+
     useEffect(() => {
         socket.on("message recieved", (newMessageRecieved) => {
             if (
@@ -151,18 +170,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         }, timeLength);
     }
 
-
     // lottie styles
     const lottieStyleTyping = {
         width: "70px",
         marginBottom: 5,
         marginLeft: 0
-    }
-    const lottieStyleActive = {
-        width: "70px",
-    }
-    const lottieStyleOffline = {
-        width: "70px",
     }
 
     return (
@@ -246,28 +258,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                 value={newMessage}
                             />
                         </FormControl>
-                        <Box id='status'>
-                            {onlineUsers[selectedChat.users[0]._id] ? (
-                            <>
-                                <Lottie
-                                
-                                    animationData={animationActiveData}
-                                    style={lottieStyleActive}
-                                    loop={true}
-                                    autoPlay={true}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <Lottie
-                                    animationData={animationOfflineData}
-                                    style={lottieStyleOffline}
-                                    loop={true}
-                                    autoPlay={true}
-                                />
-                            </>
-                        )}
-                        </Box>
+                        
+                        <IsOnlineAnimation
+                        selectedChat={selectedChat}
+                        isOpponentOnline={isOpponentOnline}
+                         />
 
                     </Box>
                 </>

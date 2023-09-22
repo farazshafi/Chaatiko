@@ -22,9 +22,9 @@ app.use("/api/chat", chatRoutes)
 app.use("/api/message", messageRoutes)
 
 // production
-// const NODE_ENV = "production"
-// development 
 const NODE_ENV = "production"
+// development 
+// const NODE_ENV = "development"
 
 
 // -------------------Deployment------------
@@ -61,17 +61,23 @@ const io = require("socket.io")(server, {
     }
 })
 
-const onlineUsers = {}; // This object will store online status for users
+let onlineUsers = []; // This array will store online status for users
 
 io.on("connection", (socket) => {
     console.log("connected to socket.io")
     socket.on("setup", (userData) => {
-        onlineUsers[userData._id] = true; // User is online
         socket.join(userData._id);
         socket.emit("connected");
-        // Notify all other users about the updated online status
-        io.emit("userStatus", { userId: userData._id, isOnline: true });
     });
+    socket.on("addNewUser", (userId) => {
+        !onlineUsers.some((user) => user.userId === userId) &&
+        onlineUsers.push({
+            userId,
+            socketId:socket.id
+        })
+        console.log("onlineUsers : ",onlineUsers)
+        io.emit("getOnlineUsers",onlineUsers)
+    })
     socket.on("join chat", (room) => {
         socket.join(room);
         console.log("User Joined Room: " + room);
@@ -88,14 +94,13 @@ io.on("connection", (socket) => {
         });
     });
     socket.on('disconnect', () => {
-        const userId = socket.id; // Assuming socket id is the user id for simplicity
-        if (onlineUsers[userId]) {
-            onlineUsers[userId] = false; // User is offline
-            // Notify all other users about the updated online status
-            io.emit("userStatus", { userId, isOnline: false });
+        const index = onlineUsers.findIndex(user => user.socketId === socket.id);
+    
+        if (index !== -1) {
+            onlineUsers.splice(index, 1);  // Remove the user from the array
+            io.emit("getOnlineUsers", onlineUsers);
+            console.log("Online Users :",onlineUsers)
         }
-        console.log('User disconnected');
-        socket.disconnect(); // Disconnect the socket
     });
-
+    
 })
