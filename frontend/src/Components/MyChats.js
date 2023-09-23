@@ -6,6 +6,7 @@ import { AddIcon } from '@chakra-ui/icons'
 import ChatLoading from './ChatLoading'
 import { getSender } from "../config/ChatLogics"
 import GroupChatModal from './miscellaneous/GroupChatModal'
+import ToggleColorMode from './ToggleColorMode'
 
 const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState()
@@ -49,7 +50,6 @@ const MyChats = ({ fetchAgain }) => {
         flexDir={"column"}
         alignItems={"center"}
         padding={3}
-        bg={"white"}
         width={{ base: "100%", md: "31%" }}
         borderRadius={"lg"}
         borderWidth={"1px"}
@@ -64,7 +64,11 @@ const MyChats = ({ fetchAgain }) => {
           justifyContent={"space-between"}
           alignItems={"center"}
         >
-          My Chats
+          <Text
+            fontSize={{ base: "14px", md: "20px", lg: "25px" }}
+          >
+            My Chats
+          </Text>
           <GroupChatModal>
             <Button
               display={"flex"}
@@ -80,7 +84,7 @@ const MyChats = ({ fetchAgain }) => {
           display={"flex"}
           flexDir={"column"}
           p={3}
-          bg={"#F8F8F8"}
+          // bg={"#F8F8F8"}
           width={"100%"}
           height={"100%"}
           borderRadius={"lg"}

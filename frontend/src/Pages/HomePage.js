@@ -3,6 +3,7 @@ import { Box, Container, Tabs, Text, Tab, TabPanel, TabPanels, TabList } from "@
 import Login from '../Components/Authentication/Login'
 import Signup from '../Components/Authentication/Signup'
 import { useNavigate } from 'react-router-dom'
+import ToggleColorMode from '../Components/ToggleColorMode'
 
 const HomePage = () => {
 
@@ -11,12 +12,17 @@ const HomePage = () => {
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"))
 
-    if(userInfo){
-        navigate("/chats")
+    if (userInfo) {
+      navigate("/chats")
     }
-}, [navigate])
+  }, [navigate])
 
   return <>
+    <ToggleColorMode
+      pos="absolute"
+      mb="3px"
+    />
+    <br />
     <Container maxW="xl" centerContent>
       <Box
         display="flex"
@@ -24,14 +30,12 @@ const HomePage = () => {
         p={3}
         w="100%"
         m="40px 0 15px 0"
-        bg={"white"}
         borderRadius="lg"
         borderWidth="1px"
       >
         <Text fontSize="4xl" fontFamily="Work sans">Chaatiko</Text>
       </Box>
       <Box
-        bg={"white"}
         w={"100%"}
         p={4}
         borderRadius={'lg'}

@@ -54,9 +54,9 @@ const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
         // production
-        origin: "https://chaatiko.onrender.com/"
+        // origin: "https://chaatiko.onrender.com/"
         // development
-        // origin: "http://localhost:3000"
+        origin: "http://localhost:3000"
 
     }
 })

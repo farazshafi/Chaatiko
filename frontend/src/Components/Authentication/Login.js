@@ -113,8 +113,9 @@ const Login = () => {
         </Button>
         <Button
           variant='solid'
-          colorScheme='red'
+          bg={"red.600"}
           width={"100%"}
+          color={"white"}
           style={{ marginTop: 15 }}
           onClick={guestUserHandler}
         >

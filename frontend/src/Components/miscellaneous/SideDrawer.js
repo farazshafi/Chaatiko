@@ -32,6 +32,7 @@ import UserListItem from '../UserAvatar/UserListItem'
 import { getSender } from '../../config/ChatLogics'
 import { Effect } from "react-notification-badge"
 import NotificationBadge from 'react-notification-badge/lib/components/NotificationBadge'
+import ToggleColorMode from '../ToggleColorMode'
 
 const SideDrawer = () => {
   const [search, setSearch] = useState('')
@@ -115,7 +116,6 @@ const SideDrawer = () => {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        bg="white"
         width="100%"
         borderWidth="5px"
         padding="5px 10px 5px 10px"
@@ -130,8 +130,17 @@ const SideDrawer = () => {
             <Text display={{ base: "none", md: "flex" }} px="4">Search User</Text>
           </Button>
         </Tooltip>
-        <Text fontSize="2xl" fontFamily="Work sans">Chaatiko</Text>
+        <Text
+        fontFamily={"Work sans"}
+        fontSize={{base:"small", md:"35px", lg:'40px'}}
+        >
+        Chaatiko
+        </Text>
+        
         <div>
+        <ToggleColorMode 
+          ml={"0px"}
+        />
           <Menu>
             <MenuButton padding="1">
               <NotificationBadge
