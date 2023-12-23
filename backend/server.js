@@ -21,15 +21,12 @@ app.use("/api/user", userRoutes)
 app.use("/api/chat", chatRoutes)
 app.use("/api/message", messageRoutes)
 
-// production
-const NODE_ENV = "production"
-// development 
-// const NODE_ENV = "development"
+
 
 
 // -------------------Deployment------------
 const __dirname1 = path.resolve()
-if (NODE_ENV === "production") {
+if (process.env.NODE_ENV = "production") {
     app.use(express.static(path.join(__dirname1, '/frontend/build')))
     app.get("*", (req, res) => {
         res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
@@ -54,9 +51,9 @@ const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
         // production
-        // origin: "https://chaatiko.onrender.com/"
+        origin: "https://chaatiko.onrender.com/"
         // development
-        origin: "http://localhost:3000"
+        // origin: "http://localhost:3000"
 
     }
 })
