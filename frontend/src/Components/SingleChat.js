@@ -14,9 +14,9 @@ import animationTypingData from "../animations/typing.json"
 import IsOnlineAnimation from './IsOnlineAnimation'
 
 // Production
-// const ENDPOINT = "https://chaatiko.onrender.com/"
+const ENDPOINT = "https://chaatiko.onrender.com/"
 // Development
-const ENDPOINT = "http://localhost:5000"
+// const ENDPOINT = "http://localhost:5000"
 
 var socket, selectedChatCompare;
 
